@@ -38,7 +38,7 @@ function draw_cartpole(x, theta, c1, c2) {
     ctx.fill();
 }
 
-function draw(player_state, pid_state, done) {
+function draw(player_state, controller_state, done) {
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -63,7 +63,7 @@ function draw(player_state, pid_state, done) {
         ctx.stroke();
     }
     // Draw cartpoles
-    draw_cartpole(pid_state[0], pid_state[2], "gray", "lightgray");
+    draw_cartpole(controller_state[0], controller_state[2], "gray", "lightgray");
     draw_cartpole(player_state[0], player_state[2], "blue", "lightblue");
 
     // Draw the score
@@ -71,14 +71,14 @@ function draw(player_state, pid_state, done) {
     ctx.font = "20px Arial";
     ctx.fillText("Accumulated absolute distance betwee cartpole and target", 10, 30);
     ctx.fillText("Player: " + player_score.toPrecision(5), 10, 60);
-    ctx.fillText("PID: " + pid_score.toPrecision(5), 10, 90);
+    ctx.fillText("Controller: " + controller_score.toPrecision(5), 10, 90);
 }
 
 
 var player_state = [(canvas.width - cartWidth)/2, 0, 0, 0];  // initial state: [x, x_dot, theta, theta_dot]
 var player_score = 0;
-var pid_state = [(canvas.width - cartWidth)/2, 0, 0, 0];  // initial state: [x, x_dot, theta, theta_dot]
-var pid_score = 0;
+var controller_state = [(canvas.width - cartWidth)/2, 0, 0, 0];  // initial state: [x, x_dot, theta, theta_dot]
+var controller_score = 0;
 var targetX = (canvas.width - cartWidth) / 2;
 
 var keys = {};
@@ -139,7 +139,7 @@ function update_player(state) {
         force = -force_mag;
     }
 
-    return step(state, force);
+    return force;
 }
 
 function simple_controller(state) {
@@ -165,11 +165,6 @@ function lqr_controller(state) {
     return force_mag * Math.sign(force);
 }
 
-function update_controller(state) {
-    force = lqr_controller(state);
-    return step(state, force);
-}
-
 function isDone(state) {
     return state[0] < 0 || state[0] > canvas.width - cartWidth || Math.abs(state[2]) > Math.PI/2;
 }
@@ -177,13 +172,13 @@ function isDone(state) {
 var done = true;
 var count = 0;
 var noise_amp = 0.0003;
-draw(player_state, pid_state, 3);
+draw(player_state, controller_state, 3);
 function main() {
     if (keys[" "]) {
         player_state = [(canvas.width - cartWidth)/2, 0, 0, 0];
-        pid_state = [(canvas.width - cartWidth)/2, 0, 0, 0];
+        controller_state = [(canvas.width - cartWidth)/2, 0, 0, 0];
         player_score = 0;
-        pid_score = 0;
+        controller_score = 0;
         count = 0;
         targetX = (canvas.width - cartWidth) / 2;
         done = false;
@@ -196,16 +191,18 @@ function main() {
         }
         theta_noise = noise_amp * Math.sqrt(-2 * Math.log(Math.random())) * Math.cos(2 * Math.PI * Math.random());
 
-        player_state = update_player(player_state);
+        player_force = update_player(player_state);
+        player_state = step(player_state, player_force);
         player_state[2] += theta_noise;
         player_score += score_factor * Math.abs(player_state[0] - targetX);
 
-        pid_state = update_controller(pid_state);
-        pid_state[2] += theta_noise;
-        pid_score += score_factor * Math.abs(pid_state[0] - targetX);
+        controller_force = lqr_controller(controller_state);
+        controller_state = step(controller_state, controller_force);
+        controller_state[2] += theta_noise;
+        controller_score += score_factor * Math.abs(controller_state[0] - targetX);
 
-        done = 1 * isDone(player_state) + 2 * isDone(pid_state);
-        draw(player_state, pid_state, done);
+        done = 1 * isDone(player_state) + 2 * isDone(controller_state);
+        draw(player_state, controller_state, done);
     }
 }
 
