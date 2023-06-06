@@ -143,15 +143,14 @@ function update_player(state) {
 }
 
 function simple_controller(state) {
-    err = state[2];
+    errx = state[0] - targetX;
+    theta_target = 0.001 * errx;
+    theta = state[2];
     var force = 0;
-    if (err > 0) {
+    if (theta > theta_target) {
         force = -force_mag;
-    } else if (err < 0) {
+    } else if (theta < theta_target) {
         force = force_mag;
-    }
-    if (Math.abs(state[0] - targetX) < 10 && Math.random() < 0.1) {
-        force = Math.sign(state[0] - targetX) * force_mag;
     }
     return force;
 }
