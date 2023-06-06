@@ -62,6 +62,9 @@ function draw(player_state, controller_state, player_force, controller_force, do
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (done > 0) {
+        if (player_score > player_high_score) {
+            player_high_score = player_score;
+        }
         ctx.fillStyle = "red";
         if (done == 1) {
             ctx.fillText("Failed", 200, 30); 
@@ -90,13 +93,14 @@ function draw(player_state, controller_state, player_force, controller_force, do
     ctx.fillStyle = "black";
     ctx.font = "20px Arial";
     ctx.fillText("Player score: " + player_score.toPrecision(5), 10, 30);
+    ctx.fillText("Player high-score: " + player_high_score.toPrecision(5), 400, 30);
     ctx.fillText("Controller score: " + controller_score.toPrecision(5), 10, 60);
 }
 
 
 var player_state = [(canvas.width - cartWidth)/2, 0, 0, 0];  // initial state: [x, x_dot, theta, theta_dot]
-var player_score = 0;
-var player_high_score = 0;
+var player_score = 0.0;
+var player_high_score = 0.0;
 var controller_state = [(canvas.width - cartWidth)/2, 0, 0, 0];  // initial state: [x, x_dot, theta, theta_dot]
 var controller_score = 0;
 var targetX = (canvas.width - cartWidth) / 2;
