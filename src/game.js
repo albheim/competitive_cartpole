@@ -74,6 +74,7 @@ function draw(player_state, controller_state, player_force, controller_force, do
         ctx.fillText("Keep the pendulum balanced, while keeping the cart close to the target.", 80, 330);
     } else {
         // Draw the target
+        ctx.lineWidth = 2;
         ctx.strokeStyle = "red";
         ctx.beginPath();
         ctx.moveTo(targetX + cartWidth / 2, 0);
