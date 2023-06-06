@@ -17,7 +17,7 @@ const l = pendulumLength;  // pendulum length
 const dt = 0.02;  // time step
 const force_mag = 1500;  // external force, should be updated based on user input
 
-function draw_cartpole(x, theta, c1, c2) {
+function draw_cartpole(x, theta, force, c1, c2) {
     // Draw the cart
     ctx.fillStyle = c1;
     ctx.fillRect(x, cartY, cartWidth, cartHeight);
@@ -36,9 +36,27 @@ function draw_cartpole(x, theta, c1, c2) {
     ctx.beginPath();
     ctx.arc(pendulumEndX, pendulumEndY, pendulumRadius, 0, 2 * Math.PI);
     ctx.fill();
+
+    // Draw the force
+    if (force != 0) {
+        x0 = x;
+        x1 = x - 50;
+        if (force > 0) {
+            x0 += cartWidth;
+            x1 = x0 + 50;
+        }
+
+        ctx.strokeStyle = c2;
+        ctx.lineWidth = 4;
+    
+        ctx.beginPath();
+        ctx.moveTo(x0, cartY+cartHeight/2);
+        ctx.lineTo(x1, cartY+cartHeight/2);
+        ctx.stroke();
+    }
 }
 
-function draw(player_state, controller_state, done) {
+function draw(player_state, controller_state, player_force, controller_force, done) {
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -63,8 +81,8 @@ function draw(player_state, controller_state, done) {
         ctx.stroke();
     }
     // Draw cartpoles
-    draw_cartpole(controller_state[0], controller_state[2], "gray", "lightgray");
-    draw_cartpole(player_state[0], player_state[2], "blue", "lightblue");
+    draw_cartpole(controller_state[0], controller_state[2], controller_force, "gray", "lightgray");
+    draw_cartpole(player_state[0], player_state[2], player_force, "blue", "lightblue");
 
     // Draw the score
     ctx.fillStyle = "black";
@@ -171,7 +189,7 @@ function isDone(state) {
 var done = true;
 var count = 0;
 var noise_amp = 0.0003;
-draw(player_state, controller_state, 3);
+draw(player_state, controller_state, 0, 0, 3);
 function main() {
     if (keys[" "]) {
         player_state = [(canvas.width - cartWidth)/2, 0, 0, 0];
@@ -201,7 +219,7 @@ function main() {
         controller_score += score_factor * Math.abs(controller_state[0] - targetX);
 
         done = 1 * isDone(player_state) + 2 * isDone(controller_state);
-        draw(player_state, controller_state, done);
+        draw(player_state, controller_state, player_force, controller_force, done);
     }
 }
 
