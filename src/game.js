@@ -8,7 +8,8 @@ const pendulumLength = 150;
 const pendulumWidth = 2;
 const pendulumRadius = 10;
 const cartY = canvas.height - cartHeight;
-const score_factor = 0.01;
+const score_factor = 0.001;
+const showforce = false;
 
 const m = 2;  // pendulum mass
 const M = 1;  // cart mass
@@ -38,7 +39,7 @@ function draw_cartpole(x, theta, force, c1, c2) {
     ctx.fill();
 
     // Draw the force
-    if (force != 0) {
+    if (showforce && force != 0) {
         x0 = x;
         x1 = x - 50;
         if (force > 0) {
@@ -63,9 +64,9 @@ function draw(player_state, controller_state, player_force, controller_force, do
     if (done > 0) {
         ctx.fillStyle = "red";
         if (done == 1) {
-            ctx.fillText("Failed", 200, 60); 
+            ctx.fillText("Failed", 200, 30); 
         } else if (done == 2) {
-            ctx.fillText("Failed", 200, 90);
+            ctx.fillText("Failed", 200, 60);
         }
         ctx.font = "48px Serif";
         ctx.fillStyle = "black";
@@ -88,14 +89,14 @@ function draw(player_state, controller_state, player_force, controller_force, do
     // Draw the score
     ctx.fillStyle = "black";
     ctx.font = "20px Arial";
-    ctx.fillText("Accumulated absolute distance betwee cartpole and target", 10, 30);
-    ctx.fillText("Player: " + player_score.toPrecision(5), 10, 60);
-    ctx.fillText("Controller: " + controller_score.toPrecision(5), 10, 90);
+    ctx.fillText("Player score: " + player_score.toPrecision(5), 10, 30);
+    ctx.fillText("Controller score: " + controller_score.toPrecision(5), 10, 60);
 }
 
 
 var player_state = [(canvas.width - cartWidth)/2, 0, 0, 0];  // initial state: [x, x_dot, theta, theta_dot]
 var player_score = 0;
+var player_high_score = 0;
 var controller_state = [(canvas.width - cartWidth)/2, 0, 0, 0];  // initial state: [x, x_dot, theta, theta_dot]
 var controller_score = 0;
 var targetX = (canvas.width - cartWidth) / 2;
@@ -212,12 +213,12 @@ function main() {
         player_force = update_player(player_state);
         player_state = step(player_state, player_force);
         player_state[2] += theta_noise;
-        player_score += score_factor * Math.abs(player_state[0] - targetX);
+        player_score += score_factor * (canvas.width - Math.abs(player_state[0] - targetX));
 
         controller_force = lqr_controller(controller_state);
         controller_state = step(controller_state, controller_force);
         controller_state[2] += theta_noise;
-        controller_score += score_factor * Math.abs(controller_state[0] - targetX);
+        controller_score += score_factor * (canvas.width - Math.abs(controller_state[0] - targetX));
 
         done = 1 * isDone(player_state) + 2 * isDone(controller_state);
         draw(player_state, controller_state, player_force, controller_force, done);
