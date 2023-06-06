@@ -45,9 +45,9 @@ function draw(player_state, pid_state, done) {
     if (done > 0) {
         ctx.fillStyle = "red";
         if (done == 1) {
-            ctx.fillText("Failed", 200, 30); 
+            ctx.fillText("Failed", 200, 60); 
         } else if (done == 2) {
-            ctx.fillText("Failed", 200, 60);
+            ctx.fillText("Failed", 200, 90);
         }
         ctx.font = "48px Serif";
         ctx.fillStyle = "black";
@@ -69,8 +69,9 @@ function draw(player_state, pid_state, done) {
     // Draw the score
     ctx.fillStyle = "black";
     ctx.font = "20px Arial";
-    ctx.fillText("Player cost: " + player_score.toPrecision(5), 10, 30);
-    ctx.fillText("PID cost: " + pid_score.toPrecision(5), 10, 60);
+    ctx.fillText("Accumulated absolute distance betwee cartpole and target", 10, 30);
+    ctx.fillText("Player: " + player_score.toPrecision(5), 10, 60);
+    ctx.fillText("PID: " + pid_score.toPrecision(5), 10, 90);
 }
 
 
